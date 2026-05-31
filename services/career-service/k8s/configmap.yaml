@@ -10,6 +10,5 @@ data:
   ENVIRONMENT: production
   EUREKA_ENABLED: "false"
   MATERIAS_SERVICE_URL: http://materias-service:8002
-  # Restrict CORS to specific domains - update for your environment
-  ALLOWED_ORIGINS: "https://app.example.com,https://www.example.com"
+  ALLOWED_ORIGINS: "*"
 

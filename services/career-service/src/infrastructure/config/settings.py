@@ -5,21 +5,21 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    database_url: str  # Required - must be set via environment or .env
+    database_url: str = "postgresql://usuario:password@127.0.0.1:5434/carreras_db"
 
     service_name: str = "career-service"
     service_port: int = 8001
     environment: str = "development"
 
     eureka_enabled: bool = True
-    eureka_server: str = "http://localhost:8761/eureka/"
+    eureka_server: str = "http://127.0.0.1:8761/eureka/"
 
-    jwt_secret: str  # Required - must be set via environment or .env
+    jwt_secret: str = "default-secret"
     secret_key: Optional[str] = None
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
-    allowed_origins: str = "http://localhost:3000,http://localhost:5173"
+    allowed_origins: str = "*"
     materias_service_url: str = "http://materias-service:8002"
 
     def __init__(self, **data):
