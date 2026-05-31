@@ -1,10 +1,11 @@
 from src.application.dtos import CareerCreateDTO, CareerUpdateDTO
-from src.application.ports import CareerRepository, SubjectClient
+from src.application.ports.input import CareerManagementInputPort
+from src.application.ports.output import CareerRepository, SubjectClient
 from src.domain.exceptions import CareerNotFoundError, DuplicateCareerError
 from src.domain.models import Career
 
 
-class CareerUseCase:
+class CareerUseCase(CareerManagementInputPort):
     def __init__(self, repository: CareerRepository, subject_client: SubjectClient):
         self.repository = repository
         self.subject_client = subject_client

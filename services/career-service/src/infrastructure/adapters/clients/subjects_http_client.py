@@ -3,7 +3,7 @@ import logging
 import httpx
 
 from src.application.dtos import SubjectResponseDTO
-from src.application.ports import SubjectClient
+from src.application.ports.output import SubjectClient
 from src.infrastructure.config import get_settings
 
 logger = logging.getLogger(__name__)

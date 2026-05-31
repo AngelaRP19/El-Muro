@@ -1,7 +1,7 @@
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from src.application.ports import CareerRepository
+from src.application.ports.output import CareerRepository
 from src.domain.models import Career
 from src.infrastructure.adapters.persistence.sqlalchemy_models import CareerSqlAlchemyModel
 
