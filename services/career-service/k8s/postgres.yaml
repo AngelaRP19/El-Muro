@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: career-db
+  labels:
+    app: career-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: career-db
+  template:
+    metadata:
+      labels:
+        app: career-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: usuario
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: POSTGRES_DB
+              value: carreras_db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: career-db
+  labels:
+    app: career-db
+spec:
+  selector:
+    app: career-db
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+
