@@ -31,7 +31,7 @@ class UpdateTopicUseCase:
             if existing is not None and existing.id.value != topic_id:
                 raise DuplicateTopicNameError(dto.name)
 
-        topic.update(name=dto.name, description=dto.description)
+        topic.update(name=dto.name, description=dto.description, materia_id=dto.materia_id)
 
         if dto.name is not None:
             unique_slug = await self._slug_service.ensure_unique(
@@ -50,6 +50,7 @@ def _to_dto(topic: Topic) -> TopicResponseDTO:
         name=topic.name.value,
         slug=topic.slug.value,
         description=topic.description,
+        materia_id=topic.materia_id,
         is_active=topic.is_active,
         created_at=topic.created_at,
         updated_at=topic.updated_at,

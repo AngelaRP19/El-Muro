@@ -26,6 +26,7 @@ class SQLAlchemyTopicRepository(TopicRepository):
                 name=topic.name.value,
                 slug=topic.slug.value,
                 description=topic.description,
+                materia_id=topic.materia_id,
                 is_active=topic.is_active,
                 created_at=topic.created_at,
                 updated_at=topic.updated_at,
@@ -35,6 +36,7 @@ class SQLAlchemyTopicRepository(TopicRepository):
             result.name = topic.name.value
             result.slug = topic.slug.value
             result.description = topic.description
+            result.materia_id = topic.materia_id
             result.is_active = topic.is_active
             result.updated_at = topic.updated_at
 
@@ -89,6 +91,7 @@ def _to_domain(model: TopicModel) -> Topic:
         name=TopicName(value=model.name),
         slug=TopicSlug(value=model.slug),
         description=model.description,
+        materia_id=model.materia_id,
         is_active=model.is_active,
         created_at=model.created_at,
         updated_at=model.updated_at,

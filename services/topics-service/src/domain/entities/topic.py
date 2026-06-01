@@ -16,6 +16,7 @@ class Topic:
         name: TopicName,
         slug: TopicSlug,
         description: Optional[str],
+        materia_id: int,
         is_active: bool,
         created_at: datetime,
         updated_at: datetime,
@@ -24,6 +25,7 @@ class Topic:
         self._name = name
         self._slug = slug
         self._description = description
+        self._materia_id = materia_id
         self._is_active = is_active
         self._created_at = created_at
         self._updated_at = updated_at
@@ -34,6 +36,7 @@ class Topic:
     def create(
         cls,
         name: str,
+        materia_id: int,
         description: Optional[str] = None,
     ) -> Topic:
         now = datetime.now(timezone.utc)
@@ -44,6 +47,7 @@ class Topic:
             name=topic_name,
             slug=topic_slug,
             description=description,
+            materia_id=materia_id,
             is_active=True,
             created_at=now,
             updated_at=now,
@@ -56,6 +60,7 @@ class Topic:
         name: TopicName,
         slug: TopicSlug,
         description: Optional[str],
+        materia_id: int,
         is_active: bool,
         created_at: datetime,
         updated_at: datetime,
@@ -65,6 +70,7 @@ class Topic:
             name=name,
             slug=slug,
             description=description,
+            materia_id=materia_id,
             is_active=is_active,
             created_at=created_at,
             updated_at=updated_at,
@@ -89,6 +95,10 @@ class Topic:
         return self._description
 
     @property
+    def materia_id(self) -> int:
+        return self._materia_id
+
+    @property
     def is_active(self) -> bool:
         return self._is_active
 
@@ -106,6 +116,7 @@ class Topic:
         self,
         name: Optional[str] = None,
         description: Optional[str] = None,
+        materia_id: Optional[int] = None,
     ) -> None:
         if not self._is_active:
             raise TopicAlreadyDeletedError(self._id.value)
@@ -116,6 +127,8 @@ class Topic:
             self._slug = new_slug
         if description is not None:
             self._description = description
+        if materia_id is not None:
+            self._materia_id = materia_id
         self._updated_at = datetime.now(timezone.utc)
 
     def delete(self) -> None:

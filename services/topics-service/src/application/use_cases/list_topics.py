@@ -29,6 +29,7 @@ def _to_dto(topic: Topic) -> TopicResponseDTO:
         name=topic.name.value,
         slug=topic.slug.value,
         description=topic.description,
+        materia_id=topic.materia_id,
         is_active=topic.is_active,
         created_at=topic.created_at,
         updated_at=topic.updated_at,
