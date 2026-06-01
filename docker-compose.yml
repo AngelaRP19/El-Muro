@@ -1,0 +1,54 @@
+version: "3.9"
+
+networks:
+  elmuro_network:
+    driver: bridge
+
+volumes:
+  postgres_topics_data:
+
+services:
+
+  # ── PostgreSQL (topics) ────────────────────────────────────────────────────
+  postgres-topics:
+    image: postgres:16-alpine
+    container_name: postgres-topics
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-topics_db}
+      POSTGRES_USER: ${POSTGRES_USER:-topics_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_topics_data:/var/lib/postgresql/data
+    networks:
+      - elmuro_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-topics_user} -d ${POSTGRES_DB:-topics_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Topics Service ─────────────────────────────────────────────────────────
+  topics-service:
+    build:
+      context: ./services/topics-service
+      dockerfile: Dockerfile
+    container_name: topics-service
+    restart: unless-stopped
+    ports:
+      - "8004:8000"
+    env_file:
+      - ./services/topics-service/.env
+    environment:
+      POSTGRES_HOST: postgres-topics
+    depends_on:
+      postgres-topics:
+        condition: service_healthy
+    networks:
+      - elmuro_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
