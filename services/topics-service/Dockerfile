@@ -26,8 +26,9 @@ COPY --from=builder /install /usr/local/lib/python3.12/site-packages
 COPY src/ ./src/
 COPY alembic/ ./alembic/
 COPY alembic.ini .
+COPY entrypoint.sh .
 
-RUN chown -R appuser:appuser /app
+RUN chmod +x entrypoint.sh && chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 8000
@@ -35,4 +36,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-CMD ["python", "-m", "src.infrastructure.api.app"]
+ENTRYPOINT ["./entrypoint.sh"]

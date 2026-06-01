@@ -1,4 +1,4 @@
-version: "3.9"
+
 
 networks:
   elmuro_network:
@@ -14,16 +14,14 @@ services:
     image: postgres:16-alpine
     container_name: postgres-topics
     restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-topics_db}
-      POSTGRES_USER: ${POSTGRES_USER:-topics_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file:
+      - ./services/topics-service/.env
     volumes:
       - postgres_topics_data:/var/lib/postgresql/data
     networks:
       - elmuro_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-topics_user} -d ${POSTGRES_DB:-topics_db}"]
+      test: ["CMD-SHELL", "pg_isready -U topics_user -d topics_db"]
       interval: 10s
       timeout: 5s
       retries: 5
