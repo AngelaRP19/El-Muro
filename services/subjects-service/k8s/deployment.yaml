@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subjects-service
+  labels:
+    app: subjects-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: subjects-service
+  template:
+    metadata:
+      labels:
+        app: subjects-service
+        version: v1
+    spec:
+      containers:
+        - name: subjects-service
+          image: subjects-service:latest
+          ports:
+            - containerPort: 8004
+          env:
+            - name: PORT
+              value: "8004"
+            - name: MONGO_URI
+              value: "mongodb://admin:password@mongo-temas:27017/subjects_service?authSource=admin"
+            - name: CAREERS_SERVICE_NAME
+              value: "carreras-service"
+            - name: JWT_SECRET
+              value: "juangpt1234juangpt1234juangpt1234"
