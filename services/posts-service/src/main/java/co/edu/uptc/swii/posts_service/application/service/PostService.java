@@ -91,7 +91,6 @@ public class PostService {
                     post.setUnlockedByUsers(new HashSet<>());
                 }
                 post.getUnlockedByUsers().add(authenticatedUserId);
-                post.setBlocked(false);
                 postRepository.save(post);
             }
         }
