@@ -8,6 +8,7 @@ Create Date: 2026-06-01 00:00:00.000000
 from __future__ import annotations
 
 import sqlalchemy as sa
+
 from alembic import op
 
 revision = "0003"
@@ -41,31 +42,45 @@ _TOPICS = [
 
 
 def upgrade() -> None:
-    op.execute("DELETE FROM topics")
-    op.add_column("topics", sa.Column("materia_id", sa.Integer(), nullable=False, server_default="0"))
-    op.alter_column("topics", "materia_id", server_default=None, existing_type=sa.Integer())
-    op.create_index("ix_topics_materia_id", "topics", ["materia_id"])
+    op.add_column("topics", sa.Column("materia_id", sa.Integer(), nullable=True))
 
     for topic_id, name, slug, description, materia_id in _TOPICS:
         op.execute(
-            f"""
-            INSERT INTO topics (id, name, slug, description, materia_id, is_active, created_at, updated_at)
-            VALUES (
-                '{topic_id}',
-                '{name}',
-                '{slug}',
-                '{description}',
-                {materia_id},
-                true,
-                NOW(),
-                NOW()
-            )
-            """
+            sa.text(
+                """
+                INSERT INTO topics (
+                    id, name, slug, description, materia_id, is_active, created_at, updated_at
+                )
+                VALUES (:id, :name, :slug, :description, :materia_id, true, NOW(), NOW())
+                ON CONFLICT (id) DO UPDATE
+                SET
+                    name = EXCLUDED.name,
+                    slug = EXCLUDED.slug,
+                    description = EXCLUDED.description,
+                    materia_id = EXCLUDED.materia_id,
+                    is_active = true,
+                    updated_at = NOW()
+                """
+            ),
+            {
+                "id": topic_id,
+                "name": name,
+                "slug": slug,
+                "description": description,
+                "materia_id": materia_id,
+            },
         )
+
+    op.execute(
+        sa.text("UPDATE topics SET materia_id = :materia_id WHERE materia_id IS NULL"),
+        {"materia_id": 1},
+    )
+    op.alter_column("topics", "materia_id", nullable=False, existing_type=sa.Integer())
+    op.create_index("ix_topics_materia_id", "topics", ["materia_id"])
 
 
 def downgrade() -> None:
     for topic_id, _, _, _, _ in _TOPICS:
-        op.execute(f"DELETE FROM topics WHERE id = '{topic_id}'")
+        op.execute(sa.text("DELETE FROM topics WHERE id = :topic_id"), {"topic_id": topic_id})
     op.drop_index("ix_topics_materia_id", table_name="topics")
     op.drop_column("topics", "materia_id")
