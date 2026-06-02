@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: career-service-config
+  labels:
+    app: career-service
+data:
+  SERVICE_NAME: career-service
+  SERVICE_PORT: "8001"
+  ENVIRONMENT: production
+  EUREKA_ENABLED: "false"
+  MATERIAS_SERVICE_URL: http://materias-service:8002
+  ALLOWED_ORIGINS: "*"
+

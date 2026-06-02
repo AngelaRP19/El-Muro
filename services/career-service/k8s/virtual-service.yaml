@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: career-service
+spec:
+  hosts:
+    - career-service
+  http:
+    - route:
+        - destination:
+            host: career-service
+            subset: v1
+            port:
+              number: 8001
+
