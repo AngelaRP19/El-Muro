@@ -1,0 +1,50 @@
+# compose.yml
+services:
+  mongodb:
+    image: mongo:8.0
+    container_name: posts-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: Password123
+      MONGO_INITDB_DATABASE: posts
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"] # Corregido a mongosh
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    
+  mongodb-express:
+    image: mongo-express
+    container_name: posts-mongodb-express
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://root:Password123@mongodb:27017/posts
+      ME_CONFIG_MONGODB_ADMINPASSWORD: Password123
+      ME_CONFIG_BASICAUTH: "false"
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongodb
+    healthcheck:
+      test: [ "CMD", "curl", "--silent", "--fail", "http://localhost:8081" ]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: posts-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

@@ -1,0 +1,9 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: posts-service-dr
+spec:
+  host: posts-service
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL

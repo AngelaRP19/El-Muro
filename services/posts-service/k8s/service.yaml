@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: posts-service
+  labels:
+    app: posts-service
+spec:
+  selector:
+    app: posts-service
+  ports:
+    - name: http
+      port: 8002
+      targetPort: 8002
