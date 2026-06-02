@@ -117,7 +117,7 @@ public class PostService {
                 throw new DomainException(HttpStatus.FORBIDDEN, "Insufficient points to view post (need 3 points)");
             }
 
-            authMeshPort.addPoints(authenticatedUserId, 3, "post-view");
+            authMeshPort.deductPoints(authenticatedUserId, 3, "post-view");
             pointsCachePort.evictUserPoints(authenticatedUserId);
         }
 
