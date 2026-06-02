@@ -1,0 +1,126 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-mongo
+  template:
+    metadata:
+      labels:
+        app: auth-mongo
+    spec:
+      containers:
+      - name: mongo
+        image: mongo:6.0
+        ports:
+        - containerPort: 27017
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-mongo
+spec:
+  selector:
+    app: auth-mongo
+  ports:
+  - port: 27017
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: posts-mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: posts-mongo
+  template:
+    metadata:
+      labels:
+        app: posts-mongo
+    spec:
+      containers:
+      - name: mongo
+        image: mongo:6.0
+        ports:
+        - containerPort: 27017
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: posts-mongo
+spec:
+  selector:
+    app: posts-mongo
+  ports:
+  - port: 27017
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subjects-mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: subjects-mongo
+  template:
+    metadata:
+      labels:
+        app: subjects-mongo
+    spec:
+      containers:
+      - name: mongo
+        image: mongo:6.0
+        ports:
+        - containerPort: 27017
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: subjects-mongo
+spec:
+  selector:
+    app: subjects-mongo
+  ports:
+  - port: 27017
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: topics-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: topics-db
+  template:
+    metadata:
+      labels:
+        app: topics-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: "topics_db"
+        - name: POSTGRES_USER
+          value: "topics_user"
+        - name: POSTGRES_PASSWORD
+          value: "topics_password"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: topics-db
+spec:
+  selector:
+    app: topics-db
+  ports:
+  - port: 5432

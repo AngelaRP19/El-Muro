@@ -12,8 +12,13 @@ server:
 security:
   jwt:
     secret: juangpt1234juangpt1234juangpt1234
+  hmac:
+    secret: ${HMAC_SECRET:change-this-hmac-secret}
 
 integration:
+  internal:
+    service-id: subjects-service
   careers:
     service-name: carreras-service
-    exists-path: /api/carreras/_exists/{careerId}
+    exists-path: ${CAREER_SERVICE_EXISTS_PATH:/api/carreras/internal/{careerId}/exists}
+    exists-sign-path: ${CAREER_SERVICE_EXISTS_SIGN_PATH:/internal/{careerId}/exists}

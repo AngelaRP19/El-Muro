@@ -1,0 +1,33 @@
+1. Bypassing registration (route not found in current image). Fetching existing users...
+Users ensured in DB.
+2. Logging in to obtain JWTs...
+[PASS] auth-service - POST /login (student)
+[PASS] auth-service - POST /login (admin)
+4. Testing Career Service...
+[FAIL] career-service - POST /api/carreras/crear | Error: ECONNREFUSED:  - 
+[FAIL] career-service - GET /api/carreras/ | Error: ECONNREFUSED:  - 
+5. Testing Topics Service...
+[FAIL] topics-service - POST /api/v1/topics | Error: ECONNREFUSED:  - 
+[FAIL] topics-service - GET /api/v1/topics | Error: ECONNREFUSED:  - 
+6. Testing Posts Service...
+[FAIL] posts-service - POST /api/posts | Error: Skipped due to missing topicId
+[FAIL] posts-service - GET /api/posts/feed/latest
+7. Testing Subjects Service...
+[FAIL] subjects-service - POST /api/subjects/create
+[FAIL] subjects-service - GET /api/subjects
+
+--- FINAL REPORT ---
+┌─────────┬────────────────────┬──────────────────────────────┬────────┬──────────────────────────────────┐
+│ (index) │ service            │ endpoint                     │ status │ error                            │
+├─────────┼────────────────────┼──────────────────────────────┼────────┼──────────────────────────────────┤
+│ 0       │ 'auth-service'     │ 'POST /login (student)'      │ 'PASS' │ null                             │
+│ 1       │ 'auth-service'     │ 'POST /login (admin)'        │ 'PASS' │ null                             │
+│ 2       │ 'career-service'   │ 'POST /api/carreras/crear'   │ 'FAIL' │ 'ECONNREFUSED:  - '              │
+│ 3       │ 'career-service'   │ 'GET /api/carreras/'         │ 'FAIL' │ 'ECONNREFUSED:  - '              │
+│ 4       │ 'topics-service'   │ 'POST /api/v1/topics'        │ 'FAIL' │ 'ECONNREFUSED:  - '              │
+│ 5       │ 'topics-service'   │ 'GET /api/v1/topics'         │ 'FAIL' │ 'ECONNREFUSED:  - '              │
+│ 6       │ 'posts-service'    │ 'POST /api/posts'            │ 'FAIL' │ 'Skipped due to missing topicId' │
+│ 7       │ 'posts-service'    │ 'GET /api/posts/feed/latest' │ 'FAIL' │ ''                               │
+│ 8       │ 'subjects-service' │ 'POST /api/subjects/create'  │ 'FAIL' │ ''                               │
+│ 9       │ 'subjects-service' │ 'GET /api/subjects'          │ 'FAIL' │ ''                               │
+└─────────┴────────────────────┴──────────────────────────────┴────────┴──────────────────────────────────┘

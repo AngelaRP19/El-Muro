@@ -22,6 +22,7 @@ from src.domain.services.slug_service import SlugUniquenessService
 from src.infrastructure.persistence.database import get_db_session
 from src.infrastructure.persistence.topic_repository_impl import SQLAlchemyTopicRepository
 from src.infrastructure.security.jwt_validator import get_current_user
+from src.infrastructure.security.hmac_validator import verify_hmac
 
 router = APIRouter(prefix="/api/v1/topics", tags=["topics"])
 
@@ -91,3 +92,19 @@ async def delete_topic(
 ) -> None:
     use_case = DeleteTopicUseCase(_repo(session))
     await use_case.execute(topic_id)
+
+
+# Internal Mesh Endpoints
+@router.get("/internal/{topic_id}/exists", response_model=dict)
+async def check_topic_exists(
+    topic_id: UUID,
+    session: AsyncSession = Depends(get_db_session),
+    _hmac: None = Depends(verify_hmac),
+) -> dict:
+    try:
+        use_case = GetTopicUseCase(_repo(session))
+        await use_case.execute(topic_id)
+        return {"exists": True}
+    except Exception:
+        # GetTopicUseCase throws an exception if it doesn't exist
+        return {"exists": False}

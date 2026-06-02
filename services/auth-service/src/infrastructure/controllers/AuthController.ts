@@ -4,6 +4,7 @@ import { GoogleOAuthUseCase } from '../../application/usecases/GoogleOAuthUseCas
 import { VerifyTokenUseCase } from '../../application/usecases/VerifyTokenUseCase';
 import { RegisterUseCase } from '../../application/usecases/RegisterUseCase';
 import { TwoFactorUseCase } from '../../application/usecases/TwoFactorUseCase';
+import { PointsUseCase } from '../../application/usecases/PointsUseCase';
 import { AppError } from '../middleware/errorHandler';
 
 export class AuthController {
@@ -12,7 +13,8 @@ export class AuthController {
     private readonly googleOAuthUseCase: GoogleOAuthUseCase,
     private readonly verifyTokenUseCase: VerifyTokenUseCase,
     private readonly registerUseCase: RegisterUseCase,
-    private readonly twoFactorUseCase: TwoFactorUseCase
+    private readonly twoFactorUseCase: TwoFactorUseCase,
+    private readonly pointsUseCase: PointsUseCase
   ) {}
 
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -111,7 +113,52 @@ export class AuthController {
       if (!userId) {
         throw new AppError('No autorizado', 401);
       }
-      res.status(200).json({ puntos: 0 });
+      const puntos = await this.pointsUseCase.getUserPoints(userId);
+      res.status(200).json({ puntos });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // --- Internal Mesh Endpoints ---
+
+  async internalGetPoints(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { userId } = req.params;
+      const puntos = await this.pointsUseCase.getUserPoints(userId);
+      res.status(200).json({ points: puntos });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async internalGetProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { userId } = req.params;
+      const profile = await this.pointsUseCase.getUserProfile(userId);
+      res.status(200).json(profile);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async internalDeductPoints(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { userId } = req.params;
+      const { points } = req.body;
+      await this.pointsUseCase.deductPoints(userId, points);
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async internalAddPoints(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { userId } = req.params;
+      const { points } = req.body;
+      await this.pointsUseCase.addPoints(userId, points);
+      res.status(204).send();
     } catch (error) {
       next(error);
     }

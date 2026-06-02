@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     JWT_AUDIENCE: Optional[str] = None
     JWT_ISSUER: Optional[str] = None
 
+    # Service Mesh HMAC
+    HMAC_SECRET: str = "change-this-hmac-secret"
+
     # Cors
     CORS_ORIGINS: list[str] = Field(default=["*"])
 

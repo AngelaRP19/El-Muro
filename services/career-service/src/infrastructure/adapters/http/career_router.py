@@ -10,6 +10,7 @@ from src.application.usecases import CareerUseCase
 from src.domain.exceptions import CareerNotFoundError, DuplicateCareerError
 from src.infrastructure.adapters.http.dependencies import get_career_use_case
 from src.infrastructure.config.security import require_admin, require_any_role
+from src.infrastructure.config.hmac_validator import verify_hmac
 
 router = APIRouter(
     prefix="/api/carreras",
@@ -39,10 +40,11 @@ def obtener_carreras(
     return use_case.list_careers(skip, limit)
 
 
-@router.get("/_exists/{carrera_id}")
+@router.get("/internal/{carrera_id}/exists")
 def existe_carrera(
     carrera_id: int,
     use_case: CareerUseCase = Depends(get_career_use_case),
+    _hmac: None = Depends(verify_hmac),
 ):
     return {"exists": use_case.career_exists(carrera_id)}
 

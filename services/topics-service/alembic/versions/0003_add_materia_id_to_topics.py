@@ -45,7 +45,7 @@ def upgrade() -> None:
     op.add_column("topics", sa.Column("materia_id", sa.Integer(), nullable=True))
 
     for topic_id, name, slug, description, materia_id in _TOPICS:
-        op.execute(
+        op.get_bind().execute(
             sa.text(
                 """
                 INSERT INTO topics (
@@ -71,7 +71,7 @@ def upgrade() -> None:
             },
         )
 
-    op.execute(
+    op.get_bind().execute(
         sa.text("UPDATE topics SET materia_id = :materia_id WHERE materia_id IS NULL"),
         {"materia_id": 1},
     )
@@ -81,6 +81,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     for topic_id, _, _, _, _ in _TOPICS:
-        op.execute(sa.text("DELETE FROM topics WHERE id = :topic_id"), {"topic_id": topic_id})
+        op.get_bind().execute(sa.text("DELETE FROM topics WHERE id = :topic_id"), {"topic_id": topic_id})
     op.drop_index("ix_topics_materia_id", table_name="topics")
     op.drop_column("topics", "materia_id")

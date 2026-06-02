@@ -58,6 +58,12 @@ export class MongoUserRepository implements IUserRepository {
     });
   }
 
+  async updatePoints(userId: string, points: number): Promise<void> {
+    await UserModel.findByIdAndUpdate(userId, {
+      $inc: { puntos: points }
+    });
+  }
+
   private mapToDomain(doc: any): User {
     return {
       id: doc._id.toString(),
