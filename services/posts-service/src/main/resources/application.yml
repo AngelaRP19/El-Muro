@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: posts-service
+  data:
+    mongodb:
+      uri: mongodb://posts-mongo:27017/posts_service
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+  logging:
+    level:
+      org.springframework.data.mongodb: DEBUG
+      org.mongodb.driver: DEBUG
+
+cache:
+  ttl:
+    feed-latest-minutes: ${CACHE_TTL_FEED_LATEST_MINUTES:2}
+    points-minutes: ${CACHE_TTL_POINTS_MINUTES:5}
+    unlock-minutes: ${CACHE_TTL_UNLOCK_MINUTES:10}
+server:
+  port: ${PORT:8002}
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:juangpt1234juangpt1234juangpt1234}
+  hmac:
+    secret: ${HMAC_SECRET:change-this-hmac-secret}
+
+integration:
+  internal:
+    service-id: ${INTERNAL_SERVICE_ID:posts-service}
+    secret: ${INTERNAL_SERVICE_SECRET:change-this-internal-secret}
+  auth-service:
+    base-url: ${AUTH_SERVICE_URL:http://localhost:8001}
+    points-api-path: ${AUTH_SERVICE_POINTS_API_PATH:/api/auth/internal/users/{userId}/points}
+    points-sign-path: ${AUTH_SERVICE_POINTS_SIGN_PATH:/internal/users/{userId}/points}
+    deduct-points-api-path: ${AUTH_SERVICE_DEDUCT_POINTS_API_PATH:/api/auth/internal/users/{userId}/deduct-points}
+    deduct-points-sign-path: ${AUTH_SERVICE_DEDUCT_POINTS_SIGN_PATH:/internal/users/{userId}/deduct-points}
+    add-points-api-path: ${AUTH_SERVICE_ADD_POINTS_API_PATH:/api/auth/internal/users/{userId}/add-points}
+    add-points-sign-path: ${AUTH_SERVICE_ADD_POINTS_SIGN_PATH:/internal/users/{userId}/add-points}
+    profile-api-path: ${AUTH_SERVICE_PROFILE_API_PATH:/api/auth/internal/users/{userId}/profile}
+    profile-sign-path: ${AUTH_SERVICE_PROFILE_SIGN_PATH:/internal/users/{userId}/profile}
+  topic-service:
+    base-url: ${TOPIC_SERVICE_URL:http://localhost:8003}
+    exists-path: ${TOPIC_SERVICE_EXISTS_PATH:/api/temas/internal/{topicId}/exists}

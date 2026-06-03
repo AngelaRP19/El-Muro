@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: subjects-service-vs
+spec:
+  hosts:
+    - subjects-service
+  http:
+    - route:
+        - destination:
+            host: subjects-service
+            port:
+              number: 8004

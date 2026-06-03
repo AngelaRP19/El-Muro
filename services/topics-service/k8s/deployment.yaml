@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: topics-service
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: topics-service
+  template:
+    metadata:
+      labels:
+        app: topics-service
+    spec:
+      containers:
+      - name: topics-service
+        image: topics-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        - name: POSTGRES_HOST
+          value: "topics-db"
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_DB
+          value: "topics_db"
+        - name: POSTGRES_USER
+          value: "topics_user"
+        - name: POSTGRES_PASSWORD
+          value: "topics_password"
+        - name: JWT_SECRET_KEY
+          value: "juangpt1234juangpt1234juangpt1234"
+        - name: HMAC_SECRET
+          value: "change-this-hmac-secret"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: topics-service
+  namespace: default
+spec:
+  selector:
+    app: topics-service
+  ports:
+  - port: 8000
+    targetPort: 8000
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: topics-service
+  namespace: default
+spec:
+  host: topics-service
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL

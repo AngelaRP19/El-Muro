@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: posts-service-vs
+spec:
+  hosts:
+    - posts-service
+  http:
+    - route:
+        - destination:
+            host: posts-service
+            port:
+              number: 8002

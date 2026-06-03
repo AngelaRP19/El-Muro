@@ -1,0 +1,66 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.5)
+
+2026-06-02T20:35:16.202-05:00  INFO 94505 --- [posts-service] [           main] c.e.u.s.p.PostsServiceApplication        : Starting PostsServiceApplication v0.0.1-SNAPSHOT using Java 26 with PID 94505 (/Users/davidrodriguez/Desktop/Universidad/Software/ProyectoFinal/El-Muro/services/posts-service/target/posts-service-0.0.1-SNAPSHOT.jar started by davidrodriguez in /Users/davidrodriguez/Desktop/Universidad/Software/ProyectoFinal/El-Muro/services/posts-service)
+2026-06-02T20:35:16.207-05:00  INFO 94505 --- [posts-service] [           main] c.e.u.s.p.PostsServiceApplication        : No active profile set, falling back to 1 default profile: "default"
+2026-06-02T20:35:17.585-05:00  INFO 94505 --- [posts-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-06-02T20:35:17.587-05:00  INFO 94505 --- [posts-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data MongoDB repositories in DEFAULT mode.
+2026-06-02T20:35:17.743-05:00  INFO 94505 --- [posts-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 148 ms. Found 1 MongoDB repository interface.
+2026-06-02T20:35:17.763-05:00  INFO 94505 --- [posts-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-06-02T20:35:17.764-05:00  INFO 94505 --- [posts-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-06-02T20:35:17.779-05:00  INFO 94505 --- [posts-service] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface co.edu.uptc.swii.posts_service.infrastructure.adapter.out.persistence.mongo.repository.PostMongoRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-02T20:35:17.779-05:00  INFO 94505 --- [posts-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 5 ms. Found 0 Redis repository interfaces.
+2026-06-02T20:35:18.459-05:00  INFO 94505 --- [posts-service] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8002 (http)
+2026-06-02T20:35:18.476-05:00  INFO 94505 --- [posts-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-02T20:35:18.476-05:00  INFO 94505 --- [posts-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.20]
+2026-06-02T20:35:18.507-05:00  INFO 94505 --- [posts-service] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 2211 ms
+2026-06-02T20:35:18.788-05:00  INFO 94505 --- [posts-service] [           main] org.mongodb.driver.client                : MongoClient with metadata {"driver": {"name": "mongo-java-driver|spring-boot|sync", "version": "5.6.4"}, "os": {"type": "Darwin", "name": "Mac OS X", "architecture": "aarch64", "version": "26.2"}, "platform": "Java/Eclipse Adoptium/26+35"} created with settings MongoClientSettings{readPreference=primary, writeConcern=WriteConcern{w=null, wTimeout=null ms, journal=null}, retryWrites=true, retryReads=true, readConcern=ReadConcern{level=null}, credential=null, transportSettings=null, commandListeners=[], codecRegistry=ProvidersCodecRegistry{codecProviders=[ValueCodecProvider{}, BsonValueCodecProvider{}, DBRefCodecProvider{}, DBObjectCodecProvider{}, DocumentCodecProvider{}, CollectionCodecProvider{}, IterableCodecProvider{}, MapCodecProvider{}, GeoJsonCodecProvider{}, GridFSFileCodecProvider{}, Jsr310CodecProvider{}, JsonObjectCodecProvider{}, BsonCodecProvider{}, com.mongodb.client.model.mql.ExpressionCodecProvider@49986178, com.mongodb.Jep395RecordCodecProvider@10bdfbcc, com.mongodb.KotlinCodecProvider@25b74370, EnumCodecProvider{}]}, loggerSettings=LoggerSettings{maxDocumentLength=1000}, clusterSettings={hosts=[localhost:27017], srvServiceName=mongodb, mode=SINGLE, requiredClusterType=UNKNOWN, requiredReplicaSetName='null', serverSelector='null', clusterListeners='[]', serverSelectionTimeout='30000 ms', localThreshold='15 ms'}, socketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=0, receiveBufferSize=0, proxySettings=ProxySettings{host=null, port=null, username=null, password=null}}, heartbeatSocketSettings=SocketSettings{connectTimeoutMS=10000, readTimeoutMS=10000, receiveBufferSize=0, proxySettings=ProxySettings{host=null, port=null, username=null, password=null}}, connectionPoolSettings=ConnectionPoolSettings{maxSize=100, minSize=0, maxWaitTimeMS=120000, maxConnectionLifeTimeMS=0, maxConnectionIdleTimeMS=0, maintenanceInitialDelayMS=0, maintenanceFrequencyMS=60000, connectionPoolListeners=[], maxConnecting=2}, serverSettings=ServerSettings{heartbeatFrequencyMS=10000, minHeartbeatFrequencyMS=500, serverMonitoringMode=AUTO, serverListeners='[]', serverMonitorListeners='[]'}, sslSettings=SslSettings{enabled=false, invalidHostNameAllowed=false, context=null}, applicationName='null', compressorList=[], uuidRepresentation=UNSPECIFIED, serverApi=null, autoEncryptionSettings=null, dnsClient=null, inetAddressResolver=null, contextProvider=null, timeoutMS=null}
+2026-06-02T20:35:18.804-05:00  INFO 94505 --- [posts-service] [localhost:27017] org.mongodb.driver.cluster               : Exception in monitor thread while connecting to server localhost:27017
+
+com.mongodb.MongoSocketOpenException: Exception opening socket
+	at com.mongodb.internal.connection.SocketStream.lambda$open$0(SocketStream.java:85) ~[mongodb-driver-core-5.6.4.jar!/:na]
+	at java.base/java.util.Optional.orElseThrow(Optional.java:407) ~[na:na]
+	at com.mongodb.internal.connection.SocketStream.open(SocketStream.java:85) ~[mongodb-driver-core-5.6.4.jar!/:na]
+	at com.mongodb.internal.connection.InternalStreamConnection.open(InternalStreamConnection.java:233) ~[mongodb-driver-core-5.6.4.jar!/:na]
+	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitor.setupNewConnectionAndGetInitialDescription(DefaultServerMonitor.java:282) ~[mongodb-driver-core-5.6.4.jar!/:na]
+	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitor.lookupServerDescription(DefaultServerMonitor.java:253) ~[mongodb-driver-core-5.6.4.jar!/:na]
+	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitor.run(DefaultServerMonitor.java:203) ~[mongodb-driver-core-5.6.4.jar!/:na]
+Caused by: java.net.ConnectException: Connection refused
+	at java.base/sun.nio.ch.Net.pollConnect(Native Method) ~[na:na]
+	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:642) ~[na:na]
+	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:548) ~[na:na]
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:599) ~[na:na]
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:284) ~[na:na]
+	at java.base/java.net.Socket.connect(Socket.java:668) ~[na:na]
+	at com.mongodb.internal.connection.SocketStreamHelper.initialize(SocketStreamHelper.java:76) ~[mongodb-driver-core-5.6.4.jar!/:na]
+	at com.mongodb.internal.connection.SocketStream.initializeSocket(SocketStream.java:104) ~[mongodb-driver-core-5.6.4.jar!/:na]
+	at com.mongodb.internal.connection.SocketStream.open(SocketStream.java:79) ~[mongodb-driver-core-5.6.4.jar!/:na]
+	... 4 common frames omitted
+
+2026-06-02T20:35:19.873-05:00  WARN 94505 --- [posts-service] [           main] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: cb1a4b89-915a-444a-b770-b6bc0cbb6356
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-06-02T20:35:19.889-05:00  INFO 94505 --- [posts-service] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by io.netty.util.internal.NativeLibraryUtil in an unnamed module (jar:nested:/Users/davidrodriguez/Desktop/Universidad/Software/ProyectoFinal/El-Muro/services/posts-service/target/posts-service-0.0.1-SNAPSHOT.jar/!BOOT-INF/lib/netty-common-4.2.12.Final.jar!/)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+2026-06-02T20:35:20.336-05:00 ERROR 94505 --- [posts-service] [           main] i.n.r.d.DnsServerAddressStreamProviders  : Unable to load io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'. Use DEBUG level to see the full stack: java.lang.UnsatisfiedLinkError: failed to load the required native library
+2026-06-02T20:35:21.618-05:00  INFO 94505 --- [posts-service] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8002 (http) with context path '/'
+2026-06-02T20:35:21.636-05:00  INFO 94505 --- [posts-service] [           main] c.e.u.s.p.PostsServiceApplication        : Started PostsServiceApplication in 5.967 seconds (process running for 6.743)
+2026-06-02T20:36:29.484-05:00  INFO 94505 --- [posts-service] [nio-8002-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-06-02T20:36:29.484-05:00  INFO 94505 --- [posts-service] [nio-8002-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-06-02T20:36:29.489-05:00  INFO 94505 --- [posts-service] [nio-8002-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 4 ms
+2026-06-02T20:36:29.655-05:00  INFO 94505 --- [posts-service] [nio-8002-exec-1] org.mongodb.driver.cluster               : Waiting for server to become available for operation find with ID 10. Remaining time: 29995 ms. Selector: ReadPreferenceServerSelector{readPreference=primary}, topology description: {type=UNKNOWN, servers=[{address=localhost:27017, type=UNKNOWN, state=CONNECTING, exception={com.mongodb.MongoSocketOpenException: Exception opening socket}, caused by {java.net.ConnectException: Connection refused}}].
+2026-06-02T20:40:40.165-05:00  INFO 94505 --- [posts-service] [localhost:27017] org.mongodb.driver.cluster               : Monitor thread successfully connected to server with description ServerDescription{address=localhost:27017, type=STANDALONE, cryptd=false, state=CONNECTED, ok=true, minWireVersion=0, maxWireVersion=17, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=100979542, minRoundTripTimeNanos=0}

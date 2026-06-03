@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: subjects-service
+  data:
+    mongodb:
+      uri: mongodb://admin:password@localhost:27017/subjects_service
+
+server:
+  port: 8004
+
+security:
+  jwt:
+    secret: juangpt1234juangpt1234juangpt1234
+
+integration:
+  careers:
+    service-name: carreras-service
+    exists-path: /api/carreras/_exists/{careerId}
