@@ -682,16 +682,6 @@ function App() {
                       <option key={t.id} value={t.id}>{t.name || t.nombre}</option>
                     ))}
                   </select>
-
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'not-allowed', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                    <input
-                      type="checkbox"
-                      checked={true}
-                      disabled={true}
-                      style={{ accentColor: 'var(--accent)', width: '16px', height: '16px' }}
-                    />
-                    <i className="ph-fill ph-lock-key"></i> Protegido (Obligatorio)
-                  </label>
                 </div>
                 <button className="btn btn-accent" onClick={createPost}>Publicar Trabajo</button>
               </div>

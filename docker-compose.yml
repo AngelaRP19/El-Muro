@@ -94,6 +94,7 @@ services:
       MONGO_URI: mongodb://auth-mongo:27017/auth_service?authSource=admin
       JWT_SECRET: juangpt1234juangpt1234juangpt1234
       HMAC_SECRET: change-this-hmac-secret
+      ADMIN_INITIAL_PASSWORD: password123
     depends_on:
       - auth-mongo
     networks:

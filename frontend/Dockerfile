@@ -1,7 +1,7 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm install && npm install typescript -g
 COPY . .
 # Use .env.prod if available (production build), else fall back to .env
 RUN if [ -f .env.prod ]; then cp .env.prod .env; fi

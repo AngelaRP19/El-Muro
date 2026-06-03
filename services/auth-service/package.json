@@ -4,7 +4,7 @@
   "description": "Auth Service - El Muro",
   "main": "dist/main.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npx tsc",
     "start": "node dist/main.js",
     "dev": "ts-node src/main.ts"
   },

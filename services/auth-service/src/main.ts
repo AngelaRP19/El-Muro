@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import yaml from 'yamljs';
 import path from 'path';
+import bcrypt from 'bcryptjs';
 
 import { MongoUserRepository } from './infrastructure/repositories/MongoUserRepository';
 import { GoogleOAuthAdapter } from './infrastructure/adapters/GoogleOAuthAdapter';
@@ -60,6 +61,37 @@ const authController = new AuthController(
 const authenticate = authMiddleware(JWT_SECRET);
 const internalMeshAuth = hmacMiddleware(HMAC_SECRET);
 
+async function seedDefaultAdmin(): Promise<void> {
+  const adminEmail = 'admin@uptc.edu.co';
+  const adminPassword = process.env.ADMIN_INITIAL_PASSWORD || 'password123';
+  const existingAdmin = await userRepository.findByEmail(adminEmail);
+  
+  if (!existingAdmin) {
+    console.log('[SEED] Creating default admin user...');
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+    const now = new Date();
+    
+    await userRepository.create({
+      nombre: 'Administrador',
+      correo: adminEmail,
+      password: hashedPassword,
+      rol: 'admin',
+      apodo: 'admin',
+      puntos: 100,
+      estaActivo: true,
+      isVerified: true,
+      failedLoginAttempts: 0,
+      lockUntil: null,
+      twoFactorEnabled: false,
+      createdAt: now,
+      updatedAt: now,
+    });
+    console.log('[SEED] Default admin user created successfully');
+  } else {
+    console.log('[SEED] Admin user already exists');
+  }
+}
+
 app.get('/health', (_req, res) => {
   res.status(200).json({ message: 'auth-service online' });
 });
@@ -90,6 +122,8 @@ const bootstrap = async (): Promise<void> => {
   try {
     await mongoose.connect(MONGO_URI);
     console.log('Connected to MongoDB');
+
+    await seedDefaultAdmin();
 
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
