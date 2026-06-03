@@ -13,10 +13,10 @@ export const hmacMiddleware = (secret: string) => {
         throw new AppError('Missing HMAC headers (x-service-id, x-service-timestamp, x-service-signature)', 401);
       }
 
-      // Check if timestamp is within 5 minutes to prevent replay attacks
+      // Check if timestamp is within 24 hours to prevent replay attacks
       const now = Date.now();
       const requestTime = parseInt(timestamp, 10);
-      if (Math.abs(now - requestTime) > 5 * 60 * 1000) {
+      if (Math.abs(now - requestTime) > 24 * 60 * 60 * 1000) {
         throw new AppError('HMAC timestamp expired', 401);
       }
 

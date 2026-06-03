@@ -1,8 +1,10 @@
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+# Use .env.prod if available (production build), else fall back to .env
+RUN if [ -f .env.prod ]; then cp .env.prod .env; fi
 RUN npm run build
 
 FROM nginx:alpine

@@ -5,9 +5,9 @@ import GoogleCallback from './GoogleCallback';
 import { api, setLogoutCallback } from './services/api';
 import Explore from './components/Explore';
 
-const AUTH_BASE = import.meta.env.VITE_AUTH_URL || 'http://localhost:3000';
+const AUTH_BASE = import.meta.env.VITE_AUTH_URL || '';
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-const GOOGLE_REDIRECT = import.meta.env.VITE_GOOGLE_REDIRECT_URI || 'http://localhost:5174/auth/google/callback';
+const GOOGLE_REDIRECT = import.meta.env.VITE_GOOGLE_REDIRECT_URI || (window.location.origin + '/auth/google/callback');
 
 type ViewState = 'login' | 'register' | 'feed' | 'google-callback' | 'loading';
 
@@ -87,6 +87,7 @@ function App() {
   const doLogout = useCallback(() => {
     sessionStorage.removeItem('elmuro_token');
     setAuthUser(null);
+    setActiveTab('home');
     setUserPoints(0);
     setProfileNombre('');
     setProfileApodo('');

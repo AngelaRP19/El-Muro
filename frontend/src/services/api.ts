@@ -64,7 +64,7 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
-  accessPost: (postId: string | number) => apiFetch(`/api/posts/${postId}`),
+  accessPost: (postId: string | number) => apiFetch(`/api/posts/${postId}/view`, { method: 'POST' }),
   votePost: (postId: string | number) => apiFetch(`/api/posts/${postId}/vote`, { method: 'POST' }),
   deletePost: (postId: string | number) => apiFetch(`/api/posts/${postId}`, { method: 'DELETE' }),
   togglePostVisibility: (postId: string | number) =>

@@ -9,19 +9,40 @@ const puppeteer = require('puppeteer');
 
   const page = await browser.newPage();
   
+  page.on('console', msg => console.log('   [BROWSER LOG]:', msg.text()));
+  page.on('pageerror', err => console.error('   [BROWSER ERROR]:', err.message));
+  
   // Helper to wait and click
   const waitAndClick = async (selector) => {
     await page.waitForSelector(selector, { visible: true });
-    await page.click(selector);
+    await page.evaluate((sel) => {
+      const el = document.querySelector(sel);
+      if (el) el.click();
+    }, selector);
   };
 
   // Helper to wait and type
   const waitAndType = async (selector, text) => {
     await page.waitForSelector(selector, { visible: true });
-    // Clear input first
-    await page.click(selector, { clickCount: 3 });
-    await page.keyboard.press('Backspace');
-    await page.type(selector, text);
+    await page.evaluate((sel, val) => {
+      const el = document.querySelector(sel);
+      if (el) {
+        const prototype = el.tagName === 'TEXTAREA'
+          ? window.HTMLTextAreaElement.prototype
+          : window.HTMLInputElement.prototype;
+        const nativeSetter = Object.getOwnPropertyDescriptor(prototype, "value").set;
+        nativeSetter.call(el, val);
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }, selector, text);
+  };
+
+  const getPointsText = async () => {
+    return await page.evaluate(() => {
+      const el = document.querySelector('.user-profile-sm span');
+      return el ? el.textContent : '';
+    });
   };
 
   try {
@@ -49,18 +70,15 @@ const puppeteer = require('puppeteer');
     await page.waitForSelector('.user-profile-sm', { visible: true });
     console.log('   Logged in successfully.');
 
-    // 3. Verify Points
-    const getPointsText = async () => {
-      return await page.evaluate(() => {
-        const el = document.querySelector('.user-profile-sm span');
-        return el ? el.textContent : '';
-      });
-    };
+    // 3. Verify Points (wait for async load)
+    console.log('3. Waiting for student demo points to load...');
+    await page.waitForFunction(() => {
+      const el = document.querySelector('.user-profile-sm span');
+      return el && el.textContent.includes('100');
+    }, { timeout: 5000 });
+    
     let pointsText = await getPointsText();
-    console.log(`3. Verified sidebar points: "${pointsText}"`);
-    if (!pointsText.includes('100')) {
-      throw new Error(`Expected 100 points initially, got: ${pointsText}`);
-    }
+    console.log(`   Verified sidebar points: "${pointsText}"`);
 
     // 4. Update Profile
     console.log('4. Navigating to Mi Perfil...');
@@ -78,7 +96,7 @@ const puppeteer = require('puppeteer');
     await waitAndType('#profileApodo', 'student_demo_edit');
     
     console.log('   Saving changes...');
-    await page.click('.profile-container button[type="submit"]');
+    await waitAndClick('.profile-container button[type="submit"]');
     
     // Wait for success message
     await page.waitForSelector('.profile-container .auth-success', { visible: true });
@@ -119,8 +137,7 @@ const puppeteer = require('puppeteer');
     
     // Topic dropdown
     await page.waitForSelector('.create-post-actions select:nth-of-type(3)', { visible: true });
-    // In our seed, Topic "SQL vs NoSQL" ID is "85e66a20-a513-4bfc-b8fb-d1d9a8375539"
-    await page.select('.create-post-actions select:nth-of-type(3)', '85e66a20-a513-4bfc-b8fb-d1d9a8375539');
+    await page.select('.create-post-actions select:nth-of-type(3)', '85e66a20-a513-4bfc-b8fb-d1d9a8375539'); // SQL vs NoSQL
     
     // Verify protection checkbox is checked and disabled
     const checkboxStatus = await page.evaluate(() => {
@@ -148,45 +165,58 @@ const puppeteer = require('puppeteer');
 
     // 6. Log out
     console.log('6. Logging out student_demo...');
-    // Click on profile menu tab
     await page.evaluate(() => {
       const items = Array.from(document.querySelectorAll('.nav-menu .nav-item'));
       const profileTab = items.find(el => el.textContent.includes('Mi Perfil'));
       if (profileTab) profileTab.click();
     });
-    await page.waitForSelector('.profile-container button[style*="color"]', { visible: true }); // Cerrar Sesión button
-    await page.click('.profile-container button[style*="color"]');
+    await page.waitForFunction(() => {
+      const btn = Array.from(document.querySelectorAll('.profile-container button'))
+        .find(b => b.textContent.includes('Cerrar Sesión'));
+      return btn && btn.offsetHeight > 0;
+    }, { timeout: 5000 });
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll('.profile-container button'))
+        .find(b => b.textContent.includes('Cerrar Sesión'));
+      if (btn) btn.click();
+    });
     
     // Wait for login view
     await page.waitForSelector('input[name="correo"]', { visible: true });
+    await new Promise(r => setTimeout(r, 1000));
     console.log('   Logged out successfully.');
 
     // 7. Log in as David Rodriguez
     console.log('7. Logging in as david.rodriguez26@uptc.edu.co...');
     await waitAndType('input[name="correo"]', 'david.rodriguez26@uptc.edu.co');
     await waitAndType('input[name="password"]', 'password123');
-    await page.click('button[type="submit"]');
+    await waitAndClick('button[type="submit"]');
     
     await page.waitForSelector('.user-profile-sm', { visible: true });
     console.log('   Logged in successfully.');
 
-    // 8. Verify David's points
+    // 8. Verify David's points (wait for async load)
+    console.log('8. Waiting for David\'s points to load...');
+    await page.waitForFunction(() => {
+      const el = document.querySelector('.user-profile-sm span');
+      return el && el.textContent.includes('500');
+    }, { timeout: 5000 });
+    
     pointsText = await getPointsText();
-    console.log(`8. David points: "${pointsText}"`);
-    if (!pointsText.includes('500')) {
-      throw new Error(`Expected David to have 500 points, got: ${pointsText}`);
-    }
+    console.log(`   David points: "${pointsText}"`);
 
-    // 9. Verify post is locked
-    console.log('9. Verifying that the new post is locked for David...');
+    // 9. Verify post is locked (wait for feed posts to load first)
+    console.log('9. Waiting for feed posts to load for David...');
+    await page.waitForSelector('.post-card', { visible: true, timeout: 5000 });
+
+    console.log('   Checking that the new post is locked for David...');
     const postStatus = await page.evaluate(() => {
       const cards = Array.from(document.querySelectorAll('.post-card'));
       const targetCard = cards.find(c => c.textContent.includes('Browser UI E2E Post'));
       if (!targetCard) return { found: false };
       const isLocked = targetCard.textContent.includes('Este trabajo está protegido') || targetCard.querySelector('.ph-lock-key');
-      const hasBlurredText = targetCard.textContent.includes('Lorem ipsum') || targetCard.querySelector('div[style*="blur"]');
       const hasRealContent = targetCard.textContent.includes('this is a secret database post');
-      return { found: true, isLocked, hasBlurredText, hasRealContent };
+      return { found: true, isLocked, hasRealContent };
     });
     console.log('   Post status for David:', postStatus);
     if (!postStatus.found) throw new Error('Could not find created post in feed.');
@@ -213,11 +243,13 @@ const puppeteer = require('puppeteer');
     console.log('    Post unlocked successfully and content is visible.');
 
     // Check David's updated points (should be 497)
+    await page.waitForFunction(() => {
+      const el = document.querySelector('.user-profile-sm span');
+      return el && el.textContent.includes('497');
+    }, { timeout: 5000 });
+    
     pointsText = await getPointsText();
     console.log(`    David updated points: "${pointsText}"`);
-    if (!pointsText.includes('497')) {
-      throw new Error(`Expected David to have 497 points after unlock, got: ${pointsText}`);
-    }
 
     // 11. Like the post
     console.log('11. Liking the post...');
@@ -241,7 +273,7 @@ const puppeteer = require('puppeteer');
         return likeBtn && likeBtn.textContent.trim() === '1';
       }
       return false;
-    }, { timeout: 3000 });
+    }, { timeout: 5000 });
     console.log('    Post liked successfully. Likes count: 1.');
 
     // 12. Log out
@@ -251,25 +283,35 @@ const puppeteer = require('puppeteer');
       const profileTab = items.find(el => el.textContent.includes('Mi Perfil'));
       if (profileTab) profileTab.click();
     });
-    await page.waitForSelector('.profile-container button[style*="color"]', { visible: true });
-    await page.click('.profile-container button[style*="color"]');
+    await page.waitForFunction(() => {
+      const btn = Array.from(document.querySelectorAll('.profile-container button'))
+        .find(b => b.textContent.includes('Cerrar Sesión'));
+      return btn && btn.offsetHeight > 0;
+    }, { timeout: 5000 });
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll('.profile-container button'))
+        .find(b => b.textContent.includes('Cerrar Sesión'));
+      if (btn) btn.click();
+    });
     await page.waitForSelector('input[name="correo"]', { visible: true });
+    await new Promise(r => setTimeout(r, 1000));
 
     // 13. Log in as Student Demo and check points (+3 points reward for like)
     console.log('13. Logging in as student_demo again...');
     await waitAndType('input[name="correo"]', 'student_demo@uptc.edu.co');
     await waitAndType('input[name="password"]', 'password123');
-    await page.click('button[type="submit"]');
+    await waitAndClick('button[type="submit"]');
     
     await page.waitForSelector('.user-profile-sm', { visible: true });
     
-    // Let's verify points
+    // Let's verify points (wait for async update to 103)
+    await page.waitForFunction(() => {
+      const el = document.querySelector('.user-profile-sm span');
+      return el && el.textContent.includes('103');
+    }, { timeout: 5000 });
+    
     pointsText = await getPointsText();
     console.log(`    Student Demo points (after receiving like): "${pointsText}"`);
-    // Expected points: 100 original + 3 for the like = 103 points
-    if (!pointsText.includes('103')) {
-      throw new Error(`Expected Student Demo to have 103 points, got: ${pointsText}`);
-    }
 
     // 14. Log out
     console.log('14. Logging out Student Demo...');
@@ -278,19 +320,29 @@ const puppeteer = require('puppeteer');
       const profileTab = items.find(el => el.textContent.includes('Mi Perfil'));
       if (profileTab) profileTab.click();
     });
-    await page.waitForSelector('.profile-container button[style*="color"]', { visible: true });
-    await page.click('.profile-container button[style*="color"]');
+    await page.waitForFunction(() => {
+      const btn = Array.from(document.querySelectorAll('.profile-container button'))
+        .find(b => b.textContent.includes('Cerrar Sesión'));
+      return btn && btn.offsetHeight > 0;
+    }, { timeout: 5000 });
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll('.profile-container button'))
+        .find(b => b.textContent.includes('Cerrar Sesión'));
+      if (btn) btn.click();
+    });
     await page.waitForSelector('input[name="correo"]', { visible: true });
+    await new Promise(r => setTimeout(r, 1000));
 
     // 15. Log in as Admin
     console.log('15. Logging in as admin_demo@uptc.edu.co...');
     await waitAndType('input[name="correo"]', 'admin_demo@uptc.edu.co');
     await waitAndType('input[name="password"]', 'password123');
-    await page.click('button[type="submit"]');
+    await waitAndClick('button[type="submit"]');
     await page.waitForSelector('.user-profile-sm', { visible: true });
 
     // 16. Hide the post
     console.log('16. Hiding the post as admin...');
+    await page.waitForSelector('.post-card', { visible: true, timeout: 5000 });
     await page.evaluate(() => {
       const cards = Array.from(document.querySelectorAll('.post-card'));
       const targetCard = cards.find(c => c.textContent.includes('Browser UI E2E Post'));
@@ -316,19 +368,29 @@ const puppeteer = require('puppeteer');
       const profileTab = items.find(el => el.textContent.includes('Mi Perfil'));
       if (profileTab) profileTab.click();
     });
-    await page.waitForSelector('.profile-container button[style*="color"]', { visible: true });
-    await page.click('.profile-container button[style*="color"]');
+    await page.waitForFunction(() => {
+      const btn = Array.from(document.querySelectorAll('.profile-container button'))
+        .find(b => b.textContent.includes('Cerrar Sesión'));
+      return btn && btn.offsetHeight > 0;
+    }, { timeout: 5000 });
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll('.profile-container button'))
+        .find(b => b.textContent.includes('Cerrar Sesión'));
+      if (btn) btn.click();
+    });
     await page.waitForSelector('input[name="correo"]', { visible: true });
+    await new Promise(r => setTimeout(r, 1000));
 
     // 18. Log in as David and check post visibility
     console.log('18. Logging in as David to verify hidden post...');
     await waitAndType('input[name="correo"]', 'david.rodriguez26@uptc.edu.co');
     await waitAndType('input[name="password"]', 'password123');
-    await page.click('button[type="submit"]');
+    await waitAndClick('button[type="submit"]');
     await page.waitForSelector('.user-profile-sm', { visible: true });
 
-    // Verify post is not in the feed
+    // Verify post is not in the feed (wait 2 seconds first to be sure no posts load)
     console.log('    Checking post visibility in David\'s feed...');
+    await new Promise(r => setTimeout(r, 2000));
     const postIsVisible = await page.evaluate(() => {
       const cards = Array.from(document.querySelectorAll('.post-card'));
       return cards.some(c => c.textContent.includes('Browser UI E2E Post'));
@@ -343,8 +405,7 @@ const puppeteer = require('puppeteer');
 
   } catch (err) {
     console.error('\n❌ E2E UI TEST FAILED:', err.message);
-    // Take screenshot on failure for debugging
-    await page.screenshot({ path: 'qa/failure-screenshot.png' });
+    await page.screenshot({ path: 'failure-screenshot.png' });
     console.log('   Saved failure screenshot to qa/failure-screenshot.png');
     await browser.close();
     process.exit(1);

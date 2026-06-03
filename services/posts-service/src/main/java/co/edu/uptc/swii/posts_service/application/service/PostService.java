@@ -81,16 +81,6 @@ public class PostService {
             throw new DomainException(HttpStatus.NOT_FOUND, "Post not found");
         }
 
-        if (Boolean.TRUE.equals(post.getBlocked()) && !post.getAuthorId().equals(authenticatedUserId)) {
-            if (post.getUnlockedByUsers() == null || !post.getUnlockedByUsers().contains(authenticatedUserId)) {
-                if (post.getUnlockedByUsers() == null) {
-                    post.setUnlockedByUsers(new HashSet<>());
-                }
-                post.getUnlockedByUsers().add(authenticatedUserId);
-                postRepository.save(post);
-            }
-        }
-
         return postMapper.toResponse(post, authMeshPort.getUserName(post.getAuthorId()), authenticatedUserId);
     }
 
@@ -107,13 +97,21 @@ public class PostService {
         }
 
         if (!post.getAuthorId().equals(authenticatedUserId)) {
-            int currentPoints = pointsCachePort.getUserPoints(authenticatedUserId);
-            if (currentPoints < 3) {
-                throw new DomainException(HttpStatus.FORBIDDEN, "Insufficient points to view post (need 3 points)");
-            }
+            if (post.getUnlockedByUsers() == null || !post.getUnlockedByUsers().contains(authenticatedUserId)) {
+                int currentPoints = pointsCachePort.getUserPoints(authenticatedUserId);
+                if (currentPoints < 3) {
+                    throw new DomainException(HttpStatus.FORBIDDEN, "Insufficient points to view post (need 3 points)");
+                }
 
-            authMeshPort.deductPoints(authenticatedUserId, 3, "post-view");
-            pointsCachePort.evictUserPoints(authenticatedUserId);
+                authMeshPort.deductPoints(authenticatedUserId, 3, "post-view");
+                pointsCachePort.evictUserPoints(authenticatedUserId);
+
+                if (post.getUnlockedByUsers() == null) {
+                    post.setUnlockedByUsers(new HashSet<>());
+                }
+                post.getUnlockedByUsers().add(authenticatedUserId);
+                postRepository.save(post);
+            }
         }
 
         return postMapper.toResponse(post, authMeshPort.getUserName(post.getAuthorId()), authenticatedUserId);

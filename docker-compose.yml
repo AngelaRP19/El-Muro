@@ -1,52 +1,212 @@
-
+version: '3.8'
 
 networks:
   elmuro_network:
     driver: bridge
 
 volumes:
+  mongo_auth_data:
+  mongo_posts_data:
+  mongo_subjects_data:
   postgres_topics_data:
+  postgres_careers_data:
 
 services:
-
-  # ── PostgreSQL (topics) ────────────────────────────────────────────────────
-  postgres-topics:
-    image: postgres:16-alpine
-    container_name: postgres-topics
+  # ── Databases ─────────────────────────────────────────────────────────────
+  auth-mongo:
+    image: mongo:6.0
+    container_name: auth-mongo
+    ports:
+      - "127.0.0.1:27017:27017"
     restart: unless-stopped
-    env_file:
-      - ./services/topics-service/.env
+    volumes:
+      - mongo_auth_data:/data/db
+    networks:
+      - elmuro_network
+
+  posts-mongo:
+    image: mongo:6.0
+    container_name: posts-mongo
+    ports:
+      - "127.0.0.1:27018:27017"
+    restart: unless-stopped
+    volumes:
+      - mongo_posts_data:/data/db
+    networks:
+      - elmuro_network
+
+  subjects-mongo:
+    image: mongo:6.0
+    container_name: subjects-mongo
+    ports:
+      - "127.0.0.1:27019:27017"
+    restart: unless-stopped
+    volumes:
+      - mongo_subjects_data:/data/db
+    networks:
+      - elmuro_network
+
+  topics-db:
+    image: postgres:15-alpine
+    container_name: topics-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: topics_db
+      POSTGRES_USER: topics_user
+      POSTGRES_PASSWORD: topics_password
     volumes:
       - postgres_topics_data:/var/lib/postgresql/data
     networks:
       - elmuro_network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U topics_user -d topics_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-  # ── Topics Service ─────────────────────────────────────────────────────────
+  career-db:
+    image: postgres:15-alpine
+    container_name: career-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: careers_db
+      POSTGRES_USER: careers_user
+      POSTGRES_PASSWORD: careers_password
+    volumes:
+      - postgres_careers_data:/var/lib/postgresql/data
+    networks:
+      - elmuro_network
+
+  # ── Microservices ─────────────────────────────────────────────────────────
+  redis:
+    image: redis:alpine
+    container_name: posts-redis
+    restart: unless-stopped
+    networks:
+      - elmuro_network
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "127.0.0.1:3000:3000"
+    env_file:
+      - ./services/auth-service/.env.prod
+    environment:
+      PORT: 3000
+      MONGO_URI: mongodb://auth-mongo:27017/auth_service?authSource=admin
+      JWT_SECRET: juangpt1234juangpt1234juangpt1234
+      HMAC_SECRET: change-this-hmac-secret
+    depends_on:
+      - auth-mongo
+    networks:
+      - elmuro_network
+
+  posts-service:
+    build:
+      context: ./services/posts-service
+      dockerfile: Dockerfile
+    container_name: posts-service
+    ports:
+      - "127.0.0.1:8002:8002"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://posts-mongo:27017/posts_service
+      SPRING_DATA_MONGODB_HOST: posts-mongo
+      SPRING_DATA_MONGODB_PORT: 27017
+      SPRING_DATA_MONGODB_DATABASE: posts_service
+      SPRING_MONGODB_URI: mongodb://posts-mongo:27017/posts_service
+      SPRING_MONGODB_HOST: posts-mongo
+      SPRING_MONGODB_PORT: 27017
+      SPRING_MONGODB_DATABASE: posts_service
+      MONGO_URI: mongodb://posts-mongo:27017/posts_service
+      REDIS_HOST: redis
+      JWT_SECRET: juangpt1234juangpt1234juangpt1234
+      SECURITY_HMAC_SECRET: change-this-hmac-secret
+      TOPIC_SERVICE_URL: http://topics-service:8000
+      AUTH_SERVICE_URL: http://auth-service:3000
+    depends_on:
+      - posts-mongo
+      - redis
+    networks:
+      - elmuro_network
+
+  subjects-service:
+    build:
+      context: ./services/subjects-service
+      dockerfile: Dockerfile
+    container_name: subjects-service
+    ports:
+      - "127.0.0.1:8004:8004"
+    environment:
+      SPRING_MONGODB_HOST: subjects-mongo
+      SPRING_MONGODB_PORT: 27017
+      SPRING_MONGODB_DATABASE: subjects_service
+      JWT_SECRET: juangpt1234juangpt1234juangpt1234
+      SECURITY_HMAC_SECRET: change-this-hmac-secret
+      INTEGRATION_CAREERS_SERVICE_NAME: career-service:8001
+    depends_on:
+      - subjects-mongo
+    networks:
+      - elmuro_network
+
   topics-service:
     build:
       context: ./services/topics-service
       dockerfile: Dockerfile
     container_name: topics-service
-    restart: unless-stopped
     ports:
-      - "8004:8000"
-    env_file:
-      - ./services/topics-service/.env
+      - "127.0.0.1:8000:8000"
     environment:
-      POSTGRES_HOST: postgres-topics
+      POSTGRES_HOST: topics-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: topics_db
+      POSTGRES_USER: topics_user
+      POSTGRES_PASSWORD: topics_password
+      JWT_SECRET_KEY: juangpt1234juangpt1234juangpt1234
+      HMAC_SECRET: change-this-hmac-secret
     depends_on:
-      postgres-topics:
-        condition: service_healthy
+      - topics-db
     networks:
       - elmuro_network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      start_period: 15s
-      retries: 3
+
+  career-service:
+    build:
+      context: ./services/career-service
+      dockerfile: Dockerfile
+    container_name: career-service
+    ports:
+      - "127.0.0.1:8001:8001"
+    environment:
+      DATABASE_URL: postgresql://careers_user:careers_password@career-db:5432/careers_db
+      JWT_SECRET: juangpt1234juangpt1234juangpt1234
+      HMAC_SECRET: change-this-hmac-secret
+    depends_on:
+      - career-db
+    networks:
+      - elmuro_network
+
+  # ── Frontend ──────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: unless-stopped
+    networks:
+      - elmuro_network
+
+  # ── Nginx Gateway ─────────────────────────────────────────────────────────
+  nginx-gateway:
+    build:
+      context: ./infrastructure/nginx-gateway
+      dockerfile: Dockerfile
+    container_name: nginx-gateway
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - auth-service
+      - posts-service
+      - subjects-service
+      - topics-service
+      - career-service
+      - frontend
+    networks:
+      - elmuro_network

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const AUTH_BASE = import.meta.env.VITE_AUTH_URL || 'http://localhost:3000';
+const AUTH_BASE = import.meta.env.VITE_AUTH_URL || '';
 
 interface GoogleCallbackProps {
   onSuccess: (token: string, user: { nombre: string; correo: string; role: string }) => void;
