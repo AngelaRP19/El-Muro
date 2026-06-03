@@ -7,4 +7,5 @@ public interface UpdatePostUseCase {
     PostResponse updatePost(UpdatePostCommand command);
     PostResponse toggleVisibility(Integer postId, String authenticatedUserId, String role);
     PostResponse votePost(Integer postId, String authenticatedUserId);
+    PostResponse.CommentResponse addComment(Integer postId, String text, String authenticatedUserId);
 }

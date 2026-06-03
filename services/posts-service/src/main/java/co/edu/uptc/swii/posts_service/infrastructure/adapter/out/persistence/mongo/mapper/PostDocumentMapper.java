@@ -4,6 +4,9 @@ import co.edu.uptc.swii.posts_service.domain.model.PostAggregate;
 import co.edu.uptc.swii.posts_service.infrastructure.adapter.out.persistence.mongo.document.PostDocument;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 public class PostDocumentMapper {
 
@@ -24,6 +27,11 @@ public class PostDocumentMapper {
         doc.setUnlockedByUsers(aggregate.getUnlockedByUsers());
         doc.setVotedByUsers(aggregate.getVotedByUsers());
         doc.setRewardedVotes(aggregate.getRewardedVotes());
+        if (aggregate.getComments() != null) {
+            doc.setComments(aggregate.getComments().stream()
+                .map(c -> new PostDocument.Comment(c.getId(), c.getText(), c.getAuthorId(), c.getAuthorName(), c.getCreatedAt()))
+                .collect(Collectors.toList()));
+        }
         return doc;
     }
 
@@ -44,6 +52,11 @@ public class PostDocumentMapper {
         agg.setUnlockedByUsers(document.getUnlockedByUsers());
         agg.setVotedByUsers(document.getVotedByUsers());
         agg.setRewardedVotes(document.getRewardedVotes());
+        if (document.getComments() != null) {
+            agg.setComments(document.getComments().stream()
+                .map(c -> new PostAggregate.Comment(c.getId(), c.getText(), c.getAuthorId(), c.getAuthorName(), c.getCreatedAt()))
+                .collect(Collectors.toList()));
+        }
         return agg;
     }
 }

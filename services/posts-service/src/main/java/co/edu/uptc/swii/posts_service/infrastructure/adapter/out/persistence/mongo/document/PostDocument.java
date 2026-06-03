@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Document(collection = "posts")
@@ -25,12 +26,14 @@ public class PostDocument {
     private Set<String> unlockedByUsers;
     private Set<String> votedByUsers;
     private Integer rewardedVotes;
+    private List<Comment> comments;
 
     public PostDocument() {
         this.unlockedByUsers = new HashSet<>();
         this.votedByUsers = new HashSet<>();
         this.rewardedVotes = 0;
         this.hidden = false;
+        this.comments = new java.util.ArrayList<>();
     }
 
     public Integer getId() { return id; }
@@ -63,4 +66,35 @@ public class PostDocument {
     public void setVotedByUsers(Set<String> votedByUsers) { this.votedByUsers = votedByUsers; }
     public Integer getRewardedVotes() { return rewardedVotes; }
     public void setRewardedVotes(Integer rewardedVotes) { this.rewardedVotes = rewardedVotes; }
+    public List<Comment> getComments() { return comments; }
+    public void setComments(List<Comment> comments) { this.comments = comments; }
+
+    public static class Comment {
+        private Integer id;
+        private String text;
+        private String authorId;
+        private String authorName;
+        private LocalDateTime createdAt;
+
+        public Comment() {}
+
+        public Comment(Integer id, String text, String authorId, String authorName, LocalDateTime createdAt) {
+            this.id = id;
+            this.text = text;
+            this.authorId = authorId;
+            this.authorName = authorName;
+            this.createdAt = createdAt;
+        }
+
+        public Integer getId() { return id; }
+        public void setId(Integer id) { this.id = id; }
+        public String getText() { return text; }
+        public void setText(String text) { this.text = text; }
+        public String getAuthorId() { return authorId; }
+        public void setAuthorId(String authorId) { this.authorId = authorId; }
+        public String getAuthorName() { return authorName; }
+        public void setAuthorName(String authorName) { this.authorName = authorName; }
+        public LocalDateTime getCreatedAt() { return createdAt; }
+        public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    }
 }

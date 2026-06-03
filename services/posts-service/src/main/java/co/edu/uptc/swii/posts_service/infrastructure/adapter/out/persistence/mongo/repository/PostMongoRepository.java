@@ -10,7 +10,6 @@ import java.util.List;
 
 @Repository
 public interface PostMongoRepository extends MongoRepository<PostDocument, Integer> {
-    @Query("{ $query: {}, $orderby: { 'createdAt' : -1 } }")
     List<PostDocument> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     List<PostDocument> findByHiddenFalseOrderByCreatedAtDesc(Pageable pageable);

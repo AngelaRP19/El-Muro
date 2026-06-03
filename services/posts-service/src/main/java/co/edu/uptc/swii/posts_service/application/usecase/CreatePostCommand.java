@@ -9,4 +9,7 @@ public record CreatePostCommand(
         String topicId,
         String authenticatedUserId
 ) {
+    public String topicId() {
+        return topicId;
+    }
 }

@@ -25,7 +25,9 @@ export class GoogleOAuthAdapter implements IGoogleOAuthPort {
     });
 
     if (!tokenResponse.ok) {
-      throw new Error('Error al intercambiar código con Google');
+      const errText = await tokenResponse.text();
+      console.error('Google OAuth Exchange Failed:', tokenResponse.status, errText);
+      throw new Error(`Error al intercambiar código con Google: ${errText}`);
     }
 
     const tokenData = await tokenResponse.json() as { access_token: string };

@@ -7,6 +7,7 @@ import java.util.List;
 public interface ReadPostUseCase {
     PostResponse accessPost(Integer postId, String authenticatedUserId, String role);
     PostResponse viewPost(Integer postId, String authenticatedUserId);
-    List<PostResponse> getLatestFeed(Integer limit, boolean includeHidden);
-    List<PostResponse> getPostsByTopicId(String topicId, boolean includeHidden);
+    List<PostResponse> getLatestFeed(Integer limit, boolean includeHidden, String currentUserId);
+    List<PostResponse> getPostsByTopicId(String topicId, boolean includeHidden, String currentUserId);
+    List<PostResponse.CommentResponse> getComments(Integer postId);
 }

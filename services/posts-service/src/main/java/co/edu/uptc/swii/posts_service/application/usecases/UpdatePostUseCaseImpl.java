@@ -20,4 +20,8 @@ public class UpdatePostUseCaseImpl implements UpdatePostUseCase {
     public PostResponse votePost(Integer postId, String authenticatedUserId) {
         return postService.votePost(postId, authenticatedUserId);
     }
+    @Override
+    public PostResponse.CommentResponse addComment(Integer postId, String text, String authenticatedUserId) {
+        return postService.addComment(postId, text, authenticatedUserId);
+    }
 }

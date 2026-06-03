@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { User } from '../../domain/models/User';
 import { IUserRepository } from '../ports/out/IUserRepository';
 import { IGoogleOAuthPort } from '../ports/out/IGoogleOAuthPort';
+import { AppError } from '../../infrastructure/middleware/errorHandler';
 
 export class GoogleOAuthUseCase {
   private readonly JWT_SECRET: string;
@@ -32,6 +33,10 @@ export class GoogleOAuthUseCase {
   async execute(code: string): Promise<{ token: string; user: Partial<User> }> {
     const googleUser = await this.googleOAuthPort.exchangeCode(code);
 
+    if (!googleUser.email.endsWith('@uptc.edu.co')) {
+      throw new AppError('El correo debe ser institucional (@uptc.edu.co)', 400);
+    }
+
     let user = await this.userRepository.findByEmail(googleUser.email);
 
     if (!user) {
@@ -42,7 +47,7 @@ export class GoogleOAuthUseCase {
         password: 'google-oauth-' + Math.random().toString(36).substring(7),
         rol: 'estudiante',
         apodo: this.generateNickname(googleUser.name),
-        puntos: 5,
+        puntos: 7,
         estaActivo: true,
         isVerified: true,
         failedLoginAttempts: 0,

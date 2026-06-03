@@ -20,6 +20,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class PostService {
@@ -46,6 +47,9 @@ public class PostService {
         if (command.authenticatedUserId() == null || command.authenticatedUserId().isBlank()) {
             throw new DomainException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
         }
+        if (command.topicId() == null || command.topicId().isBlank()) {
+            throw new DomainException(HttpStatus.BAD_REQUEST, "Topic/Materia is required");
+        }
 
         PostAggregate post = new PostAggregate();
         post.setId(generatePostId());
@@ -54,15 +58,15 @@ public class PostService {
         post.setFileUrl(command.fileUrl());
         post.setTextContent(command.textContent());
         post.setVotes(0);
-        post.setAccessPoints(command.accessPoints());
-        post.setBlocked(command.accessPoints() > 0);
+        post.setAccessPoints(3);
+        post.setBlocked(true);
         post.setHidden(false);
         post.setCreatedAt(LocalDateTime.now());
         post.setAuthorId(command.authenticatedUserId());
         post.setTopicId(command.topicId());
 
         PostAggregate saved = postRepository.save(post);
-        return postMapper.toResponse(saved, authMeshPort.getUserName(saved.getAuthorId()));
+        return postMapper.toResponse(saved, authMeshPort.getUserName(saved.getAuthorId()), command.authenticatedUserId());
     }
 
     public PostResponse accessPost(Integer postId, String authenticatedUserId, String role) {
@@ -79,14 +83,6 @@ public class PostService {
 
         if (Boolean.TRUE.equals(post.getBlocked()) && !post.getAuthorId().equals(authenticatedUserId)) {
             if (post.getUnlockedByUsers() == null || !post.getUnlockedByUsers().contains(authenticatedUserId)) {
-                int points = pointsCachePort.getUserPoints(authenticatedUserId);
-                if (post.getAccessPoints() > points) {
-                    throw new DomainException(HttpStatus.FORBIDDEN, "Insufficient points to unlock this post");
-                }
-
-                authMeshPort.deductPoints(authenticatedUserId, post.getAccessPoints(), "post-unlock");
-                pointsCachePort.evictUserPoints(authenticatedUserId);
-
                 if (post.getUnlockedByUsers() == null) {
                     post.setUnlockedByUsers(new HashSet<>());
                 }
@@ -95,7 +91,7 @@ public class PostService {
             }
         }
 
-        return postMapper.toResponse(post, authMeshPort.getUserName(post.getAuthorId()));
+        return postMapper.toResponse(post, authMeshPort.getUserName(post.getAuthorId()), authenticatedUserId);
     }
 
     public PostResponse viewPost(Integer postId, String authenticatedUserId) {
@@ -120,7 +116,7 @@ public class PostService {
             pointsCachePort.evictUserPoints(authenticatedUserId);
         }
 
-        return postMapper.toResponse(post, authMeshPort.getUserName(post.getAuthorId()));
+        return postMapper.toResponse(post, authMeshPort.getUserName(post.getAuthorId()), authenticatedUserId);
     }
 
     @CacheEvict(cacheNames = CacheNames.FEED_LATEST, allEntries = true)
@@ -145,12 +141,12 @@ public class PostService {
         post.setDescription(command.description());
         post.setFileUrl(command.fileUrl());
         post.setTextContent(command.textContent());
-        post.setAccessPoints(command.accessPoints());
-        post.setBlocked(command.accessPoints() > 0);
+        post.setAccessPoints(3);
+        post.setBlocked(true);
         post.setTopicId(command.topicId());
 
         PostAggregate saved = postRepository.save(post);
-        return postMapper.toResponse(saved, authMeshPort.getUserName(saved.getAuthorId()));
+        return postMapper.toResponse(saved, authMeshPort.getUserName(saved.getAuthorId()), command.authenticatedUserId());
     }
 
     @CacheEvict(cacheNames = CacheNames.FEED_LATEST, allEntries = true)
@@ -168,7 +164,7 @@ public class PostService {
 
         post.setHidden(!Boolean.TRUE.equals(post.getHidden()));
         PostAggregate saved = postRepository.save(post);
-        return postMapper.toResponse(saved, authMeshPort.getUserName(saved.getAuthorId()));
+        return postMapper.toResponse(saved, authMeshPort.getUserName(saved.getAuthorId()), authenticatedUserId);
     }
 
     @CacheEvict(cacheNames = CacheNames.FEED_LATEST, allEntries = true)
@@ -197,33 +193,25 @@ public class PostService {
         post.getVotedByUsers().add(authenticatedUserId);
         post.setVotes(post.getVotes() + 1);
 
-        int newVotes = post.getVotes();
-        int rewardedVotes = post.getRewardedVotes() != null ? post.getRewardedVotes() : 0;
-        int votesNeededForReward = (rewardedVotes + 1) * 3;
-
-        if (newVotes >= votesNeededForReward) {
-            authMeshPort.addPoints(post.getAuthorId(), 1, "post-3-votes");
-            pointsCachePort.evictUserPoints(post.getAuthorId());
-            post.setRewardedVotes(rewardedVotes + 1);
-        }
+        authMeshPort.addPoints(post.getAuthorId(), 3, "post-vote");
+        pointsCachePort.evictUserPoints(post.getAuthorId());
 
         PostAggregate saved = postRepository.save(post);
-        return postMapper.toResponse(saved, authMeshPort.getUserName(saved.getAuthorId()));
+        return postMapper.toResponse(saved, authMeshPort.getUserName(saved.getAuthorId()), authenticatedUserId);
     }
 
-    @Cacheable(cacheNames = CacheNames.FEED_LATEST, key = "#limit")
-    public List<PostResponse> getLatestFeed(Integer limit, boolean includeHidden) {
+    public List<PostResponse> getLatestFeed(Integer limit, boolean includeHidden, String currentUserId) {
         List<PostAggregate> posts = includeHidden
                 ? postRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, limit))
                 : postRepository.findByHiddenFalseOrderByCreatedAtDesc(PageRequest.of(0, limit));
-        return posts.stream().map(post -> postMapper.toResponse(post, authMeshPort.getUserName(post.getAuthorId()))).toList();
+        return posts.stream().map(post -> postMapper.toResponse(post, authMeshPort.getUserName(post.getAuthorId()), currentUserId)).toList();
     }
 
-    public List<PostResponse> getPostsByTopicId(String topicId, boolean includeHidden) {
+    public List<PostResponse> getPostsByTopicId(String topicId, boolean includeHidden, String currentUserId) {
         List<PostAggregate> posts = includeHidden
                 ? postRepository.findByTopicIdOrderByCreatedAtDesc(topicId)
                 : postRepository.findByTopicIdAndHiddenFalseOrderByCreatedAtDesc(topicId);
-        return posts.stream().map(post -> postMapper.toResponse(post, authMeshPort.getUserName(post.getAuthorId()))).toList();
+        return posts.stream().map(post -> postMapper.toResponse(post, authMeshPort.getUserName(post.getAuthorId()), currentUserId)).toList();
     }
 
     @CacheEvict(cacheNames = CacheNames.FEED_LATEST, allEntries = true)
@@ -246,6 +234,42 @@ public class PostService {
 
     public void seedPosts(List<PostAggregate> posts) {
         postRepository.saveAll(posts);
+    }
+
+    public List<PostResponse.CommentResponse> getComments(Integer postId) {
+        PostAggregate post = postRepository.findById(postId)
+                .orElseThrow(() -> new DomainException(HttpStatus.NOT_FOUND, "Post not found"));
+        if (post.getComments() == null) return List.of();
+        return post.getComments().stream()
+                .map(c -> new PostResponse.CommentResponse(
+                        c.getId(),
+                        c.getText(),
+                        c.getAuthorId(),
+                        c.getAuthorName(),
+                        c.getCreatedAt().toString()
+                ))
+                .toList();
+    }
+
+    @CacheEvict(cacheNames = CacheNames.FEED_LATEST, allEntries = true)
+    public PostResponse.CommentResponse addComment(Integer postId, String text, String authenticatedUserId) {
+        PostAggregate post = postRepository.findById(postId)
+                .orElseThrow(() -> new DomainException(HttpStatus.NOT_FOUND, "Post not found"));
+        
+        if (post.getComments() == null) {
+            post.setComments(new java.util.ArrayList<>());
+        }
+        
+        int commentId = post.getComments().size() + 1;
+        String authorName = authMeshPort.getUserName(authenticatedUserId);
+        LocalDateTime now = LocalDateTime.now();
+        
+        PostAggregate.Comment comment = new PostAggregate.Comment(commentId, text, authenticatedUserId, authorName, now);
+        post.getComments().add(comment);
+        
+        postRepository.save(post);
+        
+        return new PostResponse.CommentResponse(commentId, text, authenticatedUserId, authorName, now.toString());
     }
 
     private Integer generatePostId() {

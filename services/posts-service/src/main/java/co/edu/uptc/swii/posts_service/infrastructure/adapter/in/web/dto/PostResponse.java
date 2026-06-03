@@ -1,5 +1,7 @@
 package co.edu.uptc.swii.posts_service.infrastructure.adapter.in.web.dto;
 
+import java.util.List;
+
 public record PostResponse(
         Integer id,
         String title,
@@ -13,6 +15,14 @@ public record PostResponse(
         String createdAt,
         String authorId,
         String authorName,
-        String topicId
+        String topicId,
+        List<CommentResponse> comments
 ) {
+    public record CommentResponse(
+            Integer id,
+            String text,
+            String authorId,
+            String authorName,
+            String createdAt
+    ) {}
 }

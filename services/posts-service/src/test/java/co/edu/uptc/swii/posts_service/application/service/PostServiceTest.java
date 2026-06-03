@@ -156,7 +156,7 @@ public class PostServiceTest {
         assertNotNull(response);
         assertEquals(3, mockPost.getVotes());
         assertTrue(mockPost.getVotedByUsers().contains(OTHER_USER_ID));
-        verify(authMeshPort).addPoints(eq(AUTHOR_ID), eq(1), eq("post-3-votes"));
+        verify(authMeshPort).addPoints(eq(AUTHOR_ID), eq(3), eq("post-vote"));
     }
 
     @Test

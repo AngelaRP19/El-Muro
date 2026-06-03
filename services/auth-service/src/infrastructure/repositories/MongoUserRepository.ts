@@ -15,6 +15,18 @@ export class MongoUserRepository implements IUserRepository {
     return this.mapToDomain(user);
   }
 
+  async findByApodo(apodo: string): Promise<User | null> {
+    const user = await UserModel.findOne({ apodo: apodo.toLowerCase().trim() })
+      .select('+password +twoFactorSecret')
+      .lean();
+
+    if (!user) {
+      return null;
+    }
+
+    return this.mapToDomain(user);
+  }
+
   async findById(id: string): Promise<User | null> {
     const user = await UserModel.findById(id)
       .select('+twoFactorSecret')
@@ -62,6 +74,19 @@ export class MongoUserRepository implements IUserRepository {
     await UserModel.findByIdAndUpdate(userId, {
       $inc: { puntos: points }
     });
+  }
+
+  async updateProfile(userId: string, updates: { nombre?: string; apodo?: string; password?: string }): Promise<User> {
+    const updated = await UserModel.findByIdAndUpdate(
+      userId,
+      { $set: updates },
+      { new: true }
+    ).select('+password +twoFactorSecret').lean();
+
+    if (!updated) {
+      throw new Error('Usuario no encontrado');
+    }
+    return this.mapToDomain(updated);
   }
 
   private mapToDomain(doc: any): User {

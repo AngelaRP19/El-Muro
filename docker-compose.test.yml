@@ -28,6 +28,8 @@ services:
   posts-mongo:
     image: mongo:6.0
     container_name: posts-mongo
+    ports:
+      - "27018:27017"
     restart: unless-stopped
     volumes:
       - mongo_posts_data:/data/db
@@ -37,6 +39,8 @@ services:
   subjects-mongo:
     image: mongo:6.0
     container_name: subjects-mongo
+    ports:
+      - "27019:27017"
     restart: unless-stopped
     volumes:
       - mongo_subjects_data:/data/db
@@ -84,6 +88,8 @@ services:
     container_name: auth-service
     ports:
       - "3000:3000"
+    env_file:
+      - ./services/auth-service/.env
     environment:
       PORT: 3000
       MONGO_URI: mongodb://auth-mongo:27017/auth_service?authSource=admin

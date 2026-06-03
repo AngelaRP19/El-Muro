@@ -14,6 +14,7 @@ import { VerifyTokenUseCase } from './application/usecases/VerifyTokenUseCase';
 import { RegisterUseCase } from './application/usecases/RegisterUseCase';
 import { TwoFactorUseCase } from './application/usecases/TwoFactorUseCase';
 import { PointsUseCase } from './application/usecases/PointsUseCase';
+import { UpdateProfileUseCase } from './application/usecases/UpdateProfileUseCase';
 import { AuthController } from './infrastructure/controllers/AuthController';
 import { authMiddleware } from './infrastructure/middleware/authMiddleware';
 import { hmacMiddleware } from './infrastructure/middleware/hmacMiddleware';
@@ -44,6 +45,7 @@ const verifyTokenUseCase = new VerifyTokenUseCase(userRepository, JWT_SECRET);
 const registerUseCase = new RegisterUseCase(userRepository, JWT_SECRET, JWT_EXPIRES_IN_HOURS);
 const twoFactorUseCase = new TwoFactorUseCase(userRepository, JWT_SECRET, JWT_EXPIRES_IN_HOURS);
 const pointsUseCase = new PointsUseCase(userRepository);
+const updateProfileUseCase = new UpdateProfileUseCase(userRepository);
 
 const authController = new AuthController(
   loginUseCase,
@@ -51,7 +53,8 @@ const authController = new AuthController(
   verifyTokenUseCase,
   registerUseCase,
   twoFactorUseCase,
-  pointsUseCase
+  pointsUseCase,
+  updateProfileUseCase
 );
 
 const authenticate = authMiddleware(JWT_SECRET);
@@ -69,6 +72,7 @@ app.post('/api/auth/google/callback', (req, res, next) => authController.googleC
 
 app.get('/api/auth/me', authenticate, (req, res, next) => authController.me(req, res, next));
 app.get('/api/auth/me/puntos', authenticate, (req, res, next) => authController.puntos(req, res, next));
+app.put('/api/auth/profile', authenticate, (req, res, next) => authController.updateProfile(req, res, next));
 
 // Swagger API Documentation
 const swaggerDocument = yaml.load(path.join(__dirname, 'swagger.yaml'));

@@ -19,11 +19,15 @@ public class ReadPostUseCaseImpl implements ReadPostUseCase {
         return postService.viewPost(postId, authenticatedUserId);
     }
     @Override
-    public List<PostResponse> getLatestFeed(Integer limit, boolean includeHidden) {
-        return postService.getLatestFeed(limit, includeHidden);
+    public List<PostResponse> getLatestFeed(Integer limit, boolean includeHidden, String currentUserId) {
+        return postService.getLatestFeed(limit, includeHidden, currentUserId);
     }
     @Override
-    public List<PostResponse> getPostsByTopicId(String topicId, boolean includeHidden) {
-        return postService.getPostsByTopicId(topicId, includeHidden);
+    public List<PostResponse> getPostsByTopicId(String topicId, boolean includeHidden, String currentUserId) {
+        return postService.getPostsByTopicId(topicId, includeHidden, currentUserId);
+    }
+    @Override
+    public List<PostResponse.CommentResponse> getComments(Integer postId) {
+        return postService.getComments(postId);
     }
 }

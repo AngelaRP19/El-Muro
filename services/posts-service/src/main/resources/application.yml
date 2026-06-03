@@ -4,6 +4,10 @@ spring:
   data:
     mongodb:
       uri: mongodb://posts-mongo:27017/posts_service
+  logging:
+    level:
+      org.springframework.data.mongodb: DEBUG
+      org.mongodb.driver: DEBUG
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
@@ -18,7 +22,7 @@ server:
 
 security:
   jwt:
-    secret: ${JWT_SECRET:juangpt1234}
+    secret: ${JWT_SECRET:juangpt1234juangpt1234juangpt1234}
   hmac:
     secret: ${HMAC_SECRET:change-this-hmac-secret}
 

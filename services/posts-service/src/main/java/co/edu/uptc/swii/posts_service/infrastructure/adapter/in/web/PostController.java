@@ -7,6 +7,7 @@ import co.edu.uptc.swii.posts_service.application.port.in.UpdatePostUseCase;
 import co.edu.uptc.swii.posts_service.domain.exception.DomainException;
 import co.edu.uptc.swii.posts_service.infrastructure.adapter.in.security.AuthenticatedUser;
 import co.edu.uptc.swii.posts_service.infrastructure.adapter.in.web.dto.CreatePostRequest;
+import co.edu.uptc.swii.posts_service.infrastructure.adapter.in.web.dto.CommentRequest;
 import co.edu.uptc.swii.posts_service.infrastructure.adapter.in.web.dto.PostMapper;
 import co.edu.uptc.swii.posts_service.infrastructure.adapter.in.web.dto.PostResponse;
 import co.edu.uptc.swii.posts_service.infrastructure.adapter.in.web.dto.UpdatePostRequest;
@@ -76,7 +77,7 @@ public class PostController {
             throw new DomainException(HttpStatus.FORBIDDEN, "Only admin or student can access feed");
         if (limit == null || limit <= 0 || limit > 100)
             throw new DomainException(HttpStatus.BAD_REQUEST, "limit must be between 1 and 100");
-        return readPostUseCase.getLatestFeed(limit, "admin".equalsIgnoreCase(user.role()));
+        return readPostUseCase.getLatestFeed(limit, "admin".equalsIgnoreCase(user.role()), user.userId());
     }
 
     @GetMapping
@@ -86,7 +87,7 @@ public class PostController {
             throw new DomainException(HttpStatus.FORBIDDEN, "Only admin or student can access posts");
         if (temaId == null || temaId.isBlank())
             throw new DomainException(HttpStatus.BAD_REQUEST, "temaId is required");
-        return readPostUseCase.getPostsByTopicId(temaId, "admin".equalsIgnoreCase(user.role()));
+        return readPostUseCase.getPostsByTopicId(temaId, "admin".equalsIgnoreCase(user.role()), user.userId());
     }
 
     @PutMapping("/{postId}")
@@ -120,5 +121,21 @@ public class PostController {
         if (!"estudiante".equalsIgnoreCase(user.role()) && !"student".equalsIgnoreCase(user.role()) && !"admin".equalsIgnoreCase(user.role()))
             throw new DomainException(HttpStatus.FORBIDDEN, "Only admin or student can delete posts");
         deletePostUseCase.deletePost(postId, user.userId(), user.role());
+    }
+
+    @GetMapping("/{postId}/comments")
+    public List<PostResponse.CommentResponse> getComments(@PathVariable Integer postId, @AuthenticationPrincipal AuthenticatedUser user) {
+        if (user == null) throw new DomainException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
+        return readPostUseCase.getComments(postId);
+    }
+
+    @PostMapping("/{postId}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public PostResponse.CommentResponse addComment(@PathVariable Integer postId, @RequestBody CommentRequest request, @AuthenticationPrincipal AuthenticatedUser user) {
+        if (user == null) throw new DomainException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
+        if (request.text() == null || request.text().isBlank()) {
+            throw new DomainException(HttpStatus.BAD_REQUEST, "Comment text is required");
+        }
+        return updatePostUseCase.addComment(postId, request.text(), user.userId());
     }
 }
